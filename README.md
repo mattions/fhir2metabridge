@@ -175,7 +175,8 @@ This is how it looks like:
       }
     }
   ]
-}```
+}
+```
 
 
 entry --> `subject` gives me the patient
@@ -307,8 +308,7 @@ https://include-api-fhir-service.includedcc.org/Condition?code=MONDO:0008608&ver
       }
     }
   ]
-}```
-
-
+}
+```
 
 if total is instead 1, we can set it to T21
