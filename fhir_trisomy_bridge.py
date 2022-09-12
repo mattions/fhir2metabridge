@@ -27,6 +27,8 @@ class FHIR2Metadata:
         for fh in files:
             print(f"Working on file: {fh}")
             document_reference_url = fh.metadata['fhir_document_reference']
+            if document_reference_url is None:
+                continue
             fh.metadata['sample_type'] = self.get_trisomy_state(document_reference_url)
             fh.metadata['case_id'] = self.get_case_id(document_reference_url)
             fh.metadata['sample_id'] = self.get_sample_id(document_reference_url)
