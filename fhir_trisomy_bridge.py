@@ -77,7 +77,7 @@ class FHIR2Metadata:
         patient_number = req_j['entry'][0]['resource']['subject']['reference']
 
         # Check if trosomy is present and confirmed
-        # Condition --> `MONDO:000860`
+        # Condition --> `MONDO:0008608`
         # verification-status=confirmed
         # patient/<number>
         # 
