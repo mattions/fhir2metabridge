@@ -1,6 +1,7 @@
 import argparse
 import datetime
 import requests
+import simplejson
 
 import sevenbridges as sbg
 from sevenbridges.http.error_handlers import rate_limit_sleeper, maintenance_sleeper
@@ -27,11 +28,22 @@ class FHIR2Metadata:
         for fh in files:
             print(f"Working on file: {fh}")
             document_reference_url = fh.metadata['fhir_document_reference']
-            fh.metadata['sample_type'] = self.get_trisomy_state(document_reference_url)
-            fh.metadata['case_id'] = self.get_case_id(document_reference_url)
-            fh.metadata['sample_id'] = self.get_sample_id(document_reference_url)
 
-            fh.save()
+            if document_reference_url:
+                print(document_reference_url)
+                trisomy_state = self.get_trisomy_state(document_reference_url)
+                if trisomy_state:
+                    fh.metadata['sample_type'] = trysome_state
+
+                case_id = self.get_case_id(document_reference_url)
+                if case_id:
+                    fh.metadata['case_id'] = case_id
+
+                sample_id = self.get_sample_id(document_reference_url)
+                if sample_id:
+                    fh.metadata['sample_id'] = sample_id
+            if trisomy_state or case_id or sample_id:
+                fh.save()
         stop = datetime.datetime.now()
         delta = stop - start
         print(f"Stop time: {stop}. Time taken: {delta}")
@@ -40,59 +52,72 @@ class FHIR2Metadata:
     def get_sample_id(self, document_reference_url):
         req = requests.get(document_reference_url, cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
         req_j = req.json()
-        specimen = req_j['entry'][0]['resource']['context']['related'][0]['reference']
-        query = f"{self.INCLUDE_FHIR}{specimen}"
-        req = requests.get(query, cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
-        req_j = req.json()
-        sample_id = ""
-        for identifier in req_j['identifier']:
-            if identifier['use'] == "official":
-                sample_id = identifier['value']
-                break
+        try: 
+            specimen = req_j['entry'][0]['resource']['context']['related'][0]['reference']
+            query = f"{self.INCLUDE_FHIR}{specimen}"
+            req = requests.get(query, cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
+            req_j = req.json()
+            sample_id = ""
+            for identifier in req_j['identifier']:
+                if identifier['use'] == "official":
+                    sample_id = identifier['value']
+                    break
+        except KeyError:
+            print(f"WARN: Not able to extract sample id for {document_reference_url}")
+            sample_id = None
         return sample_id
         
 
     def get_case_id(self, document_reference_url):
         req = requests.get(document_reference_url, cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
         req_j = req.json()
-        patient_number = req_j['entry'][0]['resource']['subject']['reference']
-        query = f"{self.INCLUDE_FHIR}{patient_number}"
-        req = requests.get(query, cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
-        req_j = req.json()
-        case_id = ""
-        for identifier in req_j['identifier']:
-            if identifier['use'] == "official":
-                case_id = identifier['value']
-                break
+        try:
+            patient_number = req_j['entry'][0]['resource']['subject']['reference']
+            query = f"{self.INCLUDE_FHIR}{patient_number}"
+            req = requests.get(query, cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
+            req_j = req.json()
+            case_id = ""
+            for identifier in req_j['identifier']:
+                if identifier['use'] == "official":
+                    case_id = identifier['value']
+                    break
+        except KeyError:
+            print(f"WARN: Not able to extract case id for {document_reference_url}")
+            case_id = None
         return case_id
 
 
 
     def get_trisomy_state(self, document_reference_url):
         req = requests.get(document_reference_url, cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
-        req_j = req.json()
-        
-        patient_number = req_j['entry'][0]['resource']['subject']['reference']
+        # if "kallisto" in document_reference_url:
+        #         import ipdb; ipdb.set_trace()
+        try:
+            req_j = req.json()
+            patient_number = req_j['entry'][0]['resource']['subject']['reference']
 
-        # Check if trosomy is present and confirmed
-        # Condition --> `MONDO:000860`
-        # verification-status=confirmed
-        # patient/<number>
-        # 
-        # all url escaped looks like:
-        # Condition?code=MONDO%3A0008608&subject=Patient%2F4927&verification-status=confirmed&_format=json
+            # Check if trosomy is present and confirmed
+            # Condition --> `MONDO:000860`
+            # verification-status=confirmed
+            # patient/<number>
+            # 
+            # all url escaped looks like:
+            # Condition?code=MONDO%3A0008608&subject=Patient%2F4927&verification-status=confirmed&_format=json
 
-        query = f"{self.INCLUDE_FHIR}Condition?code=MONDO:0008608&verification-status=confirmed&subject={patient_number}&_format=json"
-        print(query)
-        req = requests.get(query, cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
-        
-        req_j = req.json()
-        total = req_j['total']
-        trisomy_state = ""
-        if total == 0:
-            trisomy_state = "D21"
-        elif total == 1:
-            trisomy_state = "T21"
+            query = f"{self.INCLUDE_FHIR}Condition?code=MONDO:0008608&verification-status=confirmed&subject={patient_number}&_format=json"
+            print(query)
+            req = requests.get(query, cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
+            
+            req_j = req.json()
+            total = req_j['total']
+            trisomy_state = ""
+            if total == 0:
+                trisomy_state = "D21"
+            elif total == 1:
+                trisomy_state = "T21"
+        except KeyError:
+            print(f"WARN: Not able to extract trisomy state for {document_reference_url}")
+            trisomy_state = None
         return trisomy_state
 
 if __name__ == "__main__":
