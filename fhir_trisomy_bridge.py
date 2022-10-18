@@ -47,7 +47,6 @@ class FHIR2Metadata:
         stop = datetime.datetime.now()
         delta = stop - start
         print(f"Stop time: {stop}. Time taken: {delta}")
-        print("Metadata imported")
 
     def get_sample_id(self, document_reference_url):
         req = requests.get(document_reference_url, cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
