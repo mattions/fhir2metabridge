@@ -89,8 +89,7 @@ class FHIR2Metadata:
 
     def get_trisomy_state(self, document_reference_url):
         req = requests.get(document_reference_url, cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
-        # if "kallisto" in document_reference_url:
-        #         import ipdb; ipdb.set_trace()
+
         try:
             req_j = req.json()
             patient_number = req_j['entry'][0]['resource']['subject']['reference']
