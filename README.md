@@ -40,8 +40,8 @@ Check the image in `img/cavatica_project_id.png` to see a screenshot
 ## How to retrieve the FHIR cookie
 
 The Authorization cookie from the INCLUDE FHIR Server (https://include-api-fhir-service.includedcc.org/) 
-To obtain the cookie, open the Chorme or Firefox console, go to the Application tab and copy the value 
-contained in `AWSELBAuthSessionCookie-0`.
+To obtain the cookie, open the Chorme or Firefox console (right click anywhere on the FHIR page response, and then select inspect), 
+go to the Application tab and copy the value contained in `AWSELBAuthSessionCookie-0`.
 
 Check the image in `img/fhir_cookie_example.png` to see how to identify the cookie
 
