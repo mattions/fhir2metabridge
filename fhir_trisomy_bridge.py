@@ -33,7 +33,7 @@ class FHIR2Metadata:
                 print(document_reference_url)
                 trisomy_state = self.get_trisomy_state(document_reference_url)
                 if trisomy_state:
-                    fh.metadata['sample_type'] = trysome_state
+                    fh.metadata['sample_type'] = trisomy_state
 
                 case_id = self.get_case_id(document_reference_url)
                 if case_id:
