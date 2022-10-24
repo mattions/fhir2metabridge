@@ -42,8 +42,9 @@ class FHIR2Metadata:
                 sample_id = self.get_sample_id(document_reference_url)
                 if sample_id:
                     fh.metadata['sample_id'] = sample_id
-            if trisomy_state or case_id or sample_id:
-                fh.save()
+                    
+                if trisomy_state or case_id or sample_id:
+                    fh.save()
         stop = datetime.datetime.now()
         delta = stop - start
         print(f"Stop time: {stop}. Time taken: {delta}")
