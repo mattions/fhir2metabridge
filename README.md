@@ -30,6 +30,8 @@ You can find your developer token at https://cavatica.sbgenomics.com/developer/t
 
 Check the image in `img/cavatica_auth_token.png` to see a screenshot
 
+![img/cavatica_auth_token.png](https://raw.githubusercontent.com/jared-rozowsky/fhir2metabridge/main/img/cavatica_auth_token.png)
+
 
 ## How to retrieve the CAVATICA Project
 
