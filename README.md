@@ -28,8 +28,6 @@ optional arguments:
 
 You can find your developer token at https://cavatica.sbgenomics.com/developer/token
 
-Check the image in `img/cavatica_auth_token.png` to see a screenshot
-
 ![img/cavatica_auth_token.png](https://raw.githubusercontent.com/jared-rozowsky/fhir2metabridge/main/img/cavatica_auth_token.png)
 
 
@@ -37,7 +35,7 @@ Check the image in `img/cavatica_auth_token.png` to see a screenshot
 
 You can find your CAVATICA Project id on the top url
 
-Check the image in `img/cavatica_project_id.png` to see a screenshot
+![img/cavatica_project_id.png]( https://raw.githubusercontent.com/mattions/fhir2metabridge/main/img/cavatica_project_id.png)
 
 ## How to retrieve the FHIR cookie
 
@@ -45,5 +43,5 @@ The Authorization cookie from the INCLUDE FHIR Server (https://include-api-fhir-
 To obtain the cookie, open the Chorme or Firefox console (right click anywhere on the FHIR page response, and then select inspect), 
 go to the Application tab and copy the value contained in `AWSELBAuthSessionCookie-0`.
 
-Check the image in `img/fhir_cookie_example.png` to see how to identify the cookie
+![img/fhir_cookie_example.png](https://raw.githubusercontent.com/jared-rozowsky/fhir-visualization/main/fhir_cookie_example.png)
 
