@@ -38,10 +38,16 @@ class FHIR2Metadata:
                 case_id = self.get_case_id(document_reference_url)
                 if case_id:
                     fh.metadata['case_id'] = case_id
+                    gender = self.get_gender(case_id)
+                    if gender:
+                        fh.metadata['gender'] = gender
 
                 sample_id = self.get_sample_id(document_reference_url)
                 if sample_id:
                     fh.metadata['sample_id'] = sample_id
+                    age = self.get_age(sample_id)
+                    if age:
+                        fh.metadata['age'] = age
                     
                 if trisomy_state or case_id or sample_id:
                     fh.save()
@@ -66,7 +72,16 @@ class FHIR2Metadata:
             print(f"WARN: Not able to extract sample id for {document_reference_url}")
             sample_id = None
         return sample_id
-        
+    
+    def get_age(self, sample_id):
+        req = requests.get(f"{self.INCLUDE_FHIR}Specimen/{sample_id}", cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
+        req_j = req.json()
+        age = ""
+        try:
+            age = req_j['collection']['_collectedDateTime']['extension'][0]['extension'][3]['valueDuration']['value']
+        except:
+            age = None
+        return age    
 
     def get_case_id(self, document_reference_url):
         req = requests.get(document_reference_url, cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
@@ -86,12 +101,22 @@ class FHIR2Metadata:
             case_id = None
         return case_id
 
+    def get_gender(self, case_id):
+        req = requests.get(f"{self.INCLUDE_FHIR}Patient/{case_id}", cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
+        req_j = req.json()
+        gender = ""
+        try:
+            gender = req_j['gender']
+        except: 
+            gender = None
+        return gender
 
-
+            
     def get_trisomy_state(self, document_reference_url):
+        mondo_ds = ["0008608", "0700126", "0700030", "0700127", "0700128"]
+        
         req = requests.get(document_reference_url, cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
-
-
+        
         try:
             req_j = req.json()
             patient_number = req_j['entry'][0]['resource']['subject']['reference']
@@ -103,7 +128,7 @@ class FHIR2Metadata:
             # 
             # all url escaped looks like:
             # Condition?code=MONDO%3A0008608&subject=Patient%2F4927&verification-status=confirmed&_format=json
-
+                
             query = f"{self.INCLUDE_FHIR}Condition?code=MONDO:0008608&verification-status=confirmed&subject={patient_number}&_format=json"
             print(query)
             req = requests.get(query, cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
@@ -131,3 +156,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     fhir2meta = FHIR2Metadata(args.cavatica_token, args.cavatica_project, args.include_fhir_authentication_cookie)
     fhir2meta.main()
+
