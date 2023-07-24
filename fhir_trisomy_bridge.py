@@ -76,7 +76,7 @@ class FHIR2Metadata:
     def get_age(self, sample_id):
         req = requests.get(f"{self.INCLUDE_FHIR}Specimen/{sample_id}", cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
         req_j = req.json()
-        age = ""
+        age = 0
         try:
             age = req_j['collection']['_collectedDateTime']['extension'][0]['extension'][3]['valueDuration']['value']
         except:
@@ -113,7 +113,6 @@ class FHIR2Metadata:
 
             
     def get_trisomy_state(self, document_reference_url):
-        mondo_ds = ["0008608", "0700126", "0700030", "0700127", "0700128"]
         
         req = requests.get(document_reference_url, cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
         
@@ -128,14 +127,13 @@ class FHIR2Metadata:
             # 
             # all url escaped looks like:
             # Condition?code=MONDO%3A0008608&subject=Patient%2F4927&verification-status=confirmed&_format=json
-                
-            query = f"{self.INCLUDE_FHIR}Condition?code=MONDO:0008608&verification-status=confirmed&subject={patient_number}&_format=json"
+            
+            query = f"{self.INCLUDE_FHIR}Condition?code=MONDO:0008608,MONDO:0700126,MONDO:0700030,MONDO:0700127,MONDO:0700128&verification-status=confirmed&subject={patient_number}&_summary=count&_format=json"
             print(query)
             req = requests.get(query, cookies = {"AWSELBAuthSessionCookie-0" : self.fhir_auth_cookie})
-            
             req_j = req.json()
             total = req_j['total']
-            trisomy_state = ""
+            trisomy_state=""
             if total == 0:
                 trisomy_state = "D21"
             elif total == 1:
